@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Responsive CSS3 Webpage</title>
+
+<!-- Google Font -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;600&display=swap" rel="stylesheet">
+
+<!-- Icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+<style>
+
+/* Global Styling */
+body {
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    background: #f4f4f4;
+}
+
+/* Header */
+header {
+    background: #333;
+    color: white;
+    text-align: center;
+    padding: 20px;
+}
+
+/* Navigation */
+nav {
+    display: flex;
+    justify-content: center;
+    background: #555;
+    flex-wrap: wrap;
+}
+
+nav a {
+    color: white;
+    padding: 14px 20px;
+    text-decoration: none;
+}
+
+nav a:hover {
+    background: #222;
+}
+
+/* Multi-column section */
+.columns {
+    column-count: 3;
+    column-gap: 20px;
+    padding: 20px;
+}
+
+/* Cards */
+.card {
+    background: white;
+    margin: 10px;
+    padding: 15px;
+    display: inline-block;
+    width: 100%;
+    border-radius: 10px;
+    transition: transform 0.3s;
+}
+
+/* Transform on hover */
+.card:hover {
+    transform: scale(1.05) rotate(1deg);
+}
+
+/* Icons */
+.icon {
+    font-size: 30px;
+    color: #ff5722;
+}
+
+/* Animation */
+@keyframes fadeIn {
+    from {opacity: 0;}
+    to {opacity: 1;}
+}
+
+.card {
+    animation: fadeIn 1s ease-in;
+}
+
+/* Footer */
+footer {
+    text-align: center;
+    background: #333;
+    color: white;
+    padding: 10px;
+}
+
+/* Responsive Design */
+@media (max-width: 900px) {
+    .columns {
+        column-count: 2;
+    }
+}
+
+@media (max-width: 600px) {
+    .columns {
+        column-count: 1;
+    }
+
+    nav {
+        flex-direction: column;
+    }
+}
+
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>My Responsive Webpage</h1>
+    <p>Using CSS3 Features</p>
+</header>
+
+<nav>
+    <a href="#">Home</a>
+    <a href="#">About</a>
+    <a href="#">Services</a>
+    <a href="#">Contact</a>
+</nav>
+
+<section class="columns">
+
+    <div class="card">
+        <i class="fas fa-laptop-code icon"></i>
+        <h3>Web Design</h3>
+        <p>Modern and responsive web designs using CSS3 features.</p>
+    </div>
+
+    <div class="card">
+        <i class="fas fa-mobile-alt icon"></i>
+        <h3>Mobile Friendly</h3>
+        <p>Fully responsive layout that adapts to all screen sizes.</p>
+    </div>
+
+    <div class="card">
+        <i class="fas fa-rocket icon"></i>
+        <h3>Fast Performance</h3>
+        <p>Optimized animations and lightweight structure.</p>
+    </div>
+
+    <div class="card">
+        <i class="fas fa-paint-brush icon"></i>
+        <h3>Creative Design</h3>
+        <p>Attractive UI with fonts, colors, and transformations.</p>
+    </div>
+
+</section>
+
+<footer>
+    <p>© 2026 Responsive Page | Designed with CSS3</p>
+</footer>
+
+</body>
+</html>
