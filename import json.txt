@@ -1,0 +1,183 @@
+import json
+import os
+from datetime import datetime
+
+DATA_FILE = "bank.json"
+
+
+class Account:
+    def __init__(self, acc_no, name, pin, balance=0):
+        self.acc_no = acc_no
+        self.name = name
+        self.pin = pin
+        self.balance = balance
+        self.history = []
+
+    def log(self, kind, amount):
+        time = datetime.now().strftime("%d-%m-%Y %H:%M")
+        self.history.append((time, kind, amount, self.balance))
+
+    def check_pin(self, pin):
+        return self.pin == pin
+
+
+class Bank:
+    def __init__(self):
+        self.accounts = {}
+
+    def create_account(self, name, pin, opening_balance=0):
+        if not name.strip():
+            raise ValueError("Name cannot be empty")
+        if not (pin.isdigit() and len(pin) == 4):
+            raise ValueError("PIN must be exactly 4 digits")
+        if opening_balance < 0:
+            raise ValueError("Opening balance cannot be negative")
+
+        acc_no = max(self.accounts, default=1000) + 1
+        acc = Account(acc_no, name.strip(), pin, 0)
+        self.accounts[acc_no] = acc
+        if opening_balance > 0:
+            acc.balance = opening_balance
+            acc.log("Opening", opening_balance)
+        return acc_no
+
+    def get_account(self, acc_no):
+        if acc_no not in self.accounts:
+            raise KeyError("Account not found")
+        return self.accounts[acc_no]
+
+    def deposit(self, acc_no, amount):
+        if amount <= 0:
+            raise ValueError("Amount must be positive")
+        acc = self.get_account(acc_no)
+        acc.balance += amount
+        acc.log("Deposit", amount)
+
+    def withdraw(self, acc_no, amount):
+        acc = self.get_account(acc_no)
+        if amount <= 0 or amount > acc.balance:
+            raise ValueError("Invalid amount / insufficient funds")
+        acc.balance -= amount
+        acc.log("Withdraw", amount)
+
+    def transfer(self, src, dst, amount):
+        if dst not in self.accounts:
+            raise KeyError("Receiver not found")
+        if src == dst:
+            raise ValueError("Cannot transfer to the same account")
+        self.withdraw(src, amount)
+        self.deposit(dst, amount)
+
+    def statement(self, acc_no):
+        acc = self.get_account(acc_no)
+        print("\n----- Account Statement -----")
+        print("Name       :", acc.name)
+        print("Account No :", acc_no)
+        print("-" * 55)
+        print(f"{'Date':<18}{'Type':<10}{'Amount':>12}{'Balance':>12}")
+        print("-" * 55)
+        for date, kind, amt, bal in acc.history:
+            print(f"{date:<18}{kind:<10}{amt:>12.2f}{bal:>12.2f}")
+        print("-" * 55)
+        print(f"Current Balance: {acc.balance:.2f}")
+
+    def save(self, path=DATA_FILE):
+        data = {n: vars(a) for n, a in self.accounts.items()}
+        with open(path, "w") as f:
+            json.dump(data, f, indent=2)
+
+    def load(self, path=DATA_FILE):
+        if not os.path.exists(path):
+            return
+        with open(path) as f:
+            data = json.load(f)
+        for n, d in data.items():
+            acc = Account(d["acc_no"], d["name"], d["pin"], d["balance"])
+            acc.history = [tuple(h) for h in d["history"]]
+            self.accounts[int(n)] = acc
+
+
+def ask_number(text, kind=float):
+    return kind(input(text).strip())
+
+
+def login(bank):
+    acc_no = ask_number("Enter account number: ", int)
+    acc = bank.get_account(acc_no)
+    if not acc.check_pin(input("Enter PIN: ").strip()):
+        raise PermissionError("Wrong PIN - access denied")
+    return acc_no
+
+
+def show_menu():
+    print("\n===== BANKING MANAGEMENT SYSTEM =====")
+    print("1. Create account")
+    print("2. Deposit")
+    print("3. Withdraw")
+    print("4. Transfer money")
+    print("5. Check balance")
+    print("6. Account statement")
+    print("7. Save data")
+    print("0. Save and exit")
+
+
+def main():
+    bank = Bank()
+    bank.load()
+
+    while True:
+        show_menu()
+        choice = input("Enter your choice: ").strip()
+        try:
+            if choice == "1":
+                name = input("Enter name: ")
+                pin = input("Set 4-digit PIN: ").strip()
+                opening = ask_number("Opening amount (0 if none): ")
+                acc_no = bank.create_account(name, pin, opening)
+                print(f"Account created. Your account number is {acc_no}")
+
+            elif choice == "2":
+                acc_no = login(bank)
+                bank.deposit(acc_no, ask_number("Amount to deposit: "))
+                print("Deposit done. New balance:", bank.get_account(acc_no).balance)
+
+            elif choice == "3":
+                acc_no = login(bank)
+                bank.withdraw(acc_no, ask_number("Amount to withdraw: "))
+                print("Withdraw done. New balance:", bank.get_account(acc_no).balance)
+
+            elif choice == "4":
+                acc_no = login(bank)
+                dst = ask_number("Receiver account number: ", int)
+                bank.transfer(acc_no, dst, ask_number("Amount to transfer: "))
+                print("Transfer done. New balance:", bank.get_account(acc_no).balance)
+
+            elif choice == "5":
+                acc_no = login(bank)
+                print("Current balance:", bank.get_account(acc_no).balance)
+
+            elif choice == "6":
+                bank.statement(login(bank))
+
+            elif choice == "7":
+                bank.save()
+                print("Data saved in", DATA_FILE)
+
+            elif choice == "0":
+                bank.save()
+                print("Data saved. Thank you!")
+                break
+
+            else:
+                print("Invalid choice, try again.")
+
+        except ValueError as e:
+            print("Error:", e)
+        except KeyError as e:
+            print("Error:", e.args[0])
+        except PermissionError as e:
+            print("Error:", e)
+
+
+if __name__ == "__main__":
+    main()
